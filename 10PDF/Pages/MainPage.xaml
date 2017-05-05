@@ -13,6 +13,11 @@
 			<AppBarButton Icon="OpenFile" Click="AppBarButton_Click"/>
 		</CommandBar>
 	</Page.BottomAppBar>
+
+	<Page.Resources>
+		<logic:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+	</Page.Resources>
+	
     <Grid>
 		<RelativePanel x:Name="MainGrid" SizeChanged="MainGrid_SizeChanged"/>
 		<RelativePanel Background="#77FFFFFF" />
@@ -22,9 +27,9 @@
 					<RowDefinition Height="Auto" />
 					<RowDefinition />
 				</Grid.RowDefinitions>
-				
-				<ProgressBar Visibility="{x:Bind PDF.IsLoading,Mode=OneWay,Converter=}"
-				
+
+				<ProgressBar Minimum="0" Maximum="{x:Bind PDF.MaxPage,Mode=OneWay}" Value="{x:Bind PDF.CurrentPage,Mode=OneWay}" Height="10" Visibility="{x:Bind PDF.IsLoading,Mode=OneWay,Converter={StaticResource BoolToVisibilityConverter}}" IsIndeterminate="True"/>
+
 				<ListView Grid.Row="1" ItemsSource="{x:Bind PDF.ImgSource,Mode=OneWay}" SelectionMode="None" >
 					<ListView.ItemTemplate>
 						<DataTemplate x:DataType="logic:OnePage">

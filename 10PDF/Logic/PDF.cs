@@ -14,6 +14,20 @@ namespace _10PDF.Logic
 {
 	public class PDF : INotifyPropertyChanged
 	{
+		private uint maxPage = 1;
+		public uint MaxPage
+		{
+			get { return maxPage; }
+			set { maxPage = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MaxPage))); }
+		}
+
+		private uint currentPage = 1;
+		public uint CurrentPage
+		{
+			get { return currentPage; }
+			set { currentPage = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CurrentPage))); }
+		}
+
 		private bool isLoading = false;
 		public bool IsLoading
 		{
@@ -46,6 +60,7 @@ namespace _10PDF.Logic
 			Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
 			if (file != null)
 			{
+				IsLoading = true;
 				try
 				{
 					pdfDocument = await PdfDocument.LoadFromFileAsync(file);
@@ -57,18 +72,20 @@ namespace _10PDF.Logic
 				}
 				if (pdfDocument != null)
 				{
-					uint page = pdfDocument.PageCount;
-					for (uint i = 0; i < page;)
+					MaxPage = pdfDocument.PageCount;
+					for (uint i = 0; i < MaxPage;)
 					{
 						using (PdfPage unpairPage = pdfDocument.GetPage(i++))
 						{
-							if(i < page)
+							CurrentPage = i;
+							if(i < MaxPage)
 								using (PdfPage pairPage = pdfDocument.GetPage(i++))
 								{
 									var stream = new InMemoryRandomAccessStream();
 									await unpairPage.RenderToStreamAsync(stream);
 									var p = new OnePage();
 									await p.ImageUnPair.SetSourceAsync(stream);
+									CurrentPage = i;
 									await pairPage.RenderToStreamAsync(stream);
 									await p.ImagePair.SetSourceAsync(stream);
 									ImgSource.Add(p);
@@ -84,6 +101,7 @@ namespace _10PDF.Logic
 						}
 					}
 				}
+				IsLoading = false;
 			}
 			else
 				return;
