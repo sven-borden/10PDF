@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -13,10 +14,16 @@ namespace _10PDF.Logic
 {
 	public class PDF : INotifyPropertyChanged
 	{
+		private bool isLoading = false;
+		public bool IsLoading
+		{
+			get { return isLoading; }
+			set { isLoading = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsLoading))); }
+		}
 
 		private PdfDocument pdfDocument;
-		private BitmapImage imgSource = null;
-		public BitmapImage ImgSource
+		private ObservableCollection<OnePage> imgSource = null;
+		public ObservableCollection<OnePage> ImgSource
 		{
 			get { return imgSource; }
 			set { imgSource = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ImgSource))); }
@@ -31,7 +38,7 @@ namespace _10PDF.Logic
 		public async void LoadFromFile()
 		{
 			pdfDocument = null;
-			ImgSource = null;
+			ImgSource = new ObservableCollection<OnePage>();
 			var picker = new Windows.Storage.Pickers.FileOpenPicker();
 			picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
 			picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
@@ -51,12 +58,30 @@ namespace _10PDF.Logic
 				if (pdfDocument != null)
 				{
 					uint page = pdfDocument.PageCount;
-					using (PdfPage currentPage = pdfDocument.GetPage(0))
+					for (uint i = 0; i < page;)
 					{
-						var stream = new InMemoryRandomAccessStream();
-						await currentPage.RenderToStreamAsync(stream);
-						ImgSource = new BitmapImage();
-						await ImgSource.SetSourceAsync(stream);
+						using (PdfPage unpairPage = pdfDocument.GetPage(i++))
+						{
+							if(i < page)
+								using (PdfPage pairPage = pdfDocument.GetPage(i++))
+								{
+									var stream = new InMemoryRandomAccessStream();
+									await unpairPage.RenderToStreamAsync(stream);
+									var p = new OnePage();
+									await p.ImageUnPair.SetSourceAsync(stream);
+									await pairPage.RenderToStreamAsync(stream);
+									await p.ImagePair.SetSourceAsync(stream);
+									ImgSource.Add(p);
+								}
+							else
+							{
+								var stream = new InMemoryRandomAccessStream();
+								await unpairPage.RenderToStreamAsync(stream);
+								var p = new OnePage();
+								await p.ImageUnPair.SetSourceAsync(stream);
+								ImgSource.Add(p);
+							}
+						}
 					}
 				}
 			}
