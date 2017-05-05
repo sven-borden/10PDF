@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Data.Pdf;
+using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml.Media.Imaging;
 
@@ -29,6 +30,7 @@ namespace _10PDF.Logic
 		}
 
 		private bool isLoading = false;
+
 		public bool IsLoading
 		{
 			get { return isLoading; }
@@ -49,21 +51,31 @@ namespace _10PDF.Logic
 
 		}
 
-		public async void LoadFromFile()
+
+		public async void EnterPDF(string enterPath)
+		{
+			StorageFile file = await StorageFile.GetFileFromPathAsync(enterPath);
+			LoadFromFile(file);
+		}
+
+		public async void LoadFromFile(StorageFile _file = null)
 		{
 			pdfDocument = null;
 			ImgSource = new ObservableCollection<OnePage>();
-			var picker = new Windows.Storage.Pickers.FileOpenPicker();
-			picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
-			picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-			picker.FileTypeFilter.Add(".pdf");
-			Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
-			if (file != null)
+			if (_file == null)
+			{
+				var picker = new Windows.Storage.Pickers.FileOpenPicker();
+				picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+				picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
+				picker.FileTypeFilter.Add(".pdf");
+				_file = await picker.PickSingleFileAsync();
+			}
+			if (_file != null)
 			{
 				IsLoading = true;
 				try
 				{
-					pdfDocument = await PdfDocument.LoadFromFileAsync(file);
+					pdfDocument = await PdfDocument.LoadFromFileAsync(_file);
 				}
 				catch (Exception ex)
 				{

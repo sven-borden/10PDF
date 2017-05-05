@@ -73,12 +73,39 @@ namespace _10PDF
             }
         }
 
-        /// <summary>
-        /// Invoked when Navigation to a certain page fails
-        /// </summary>
-        /// <param name="sender">The Frame which failed navigation</param>
-        /// <param name="e">Details about the navigation failure</param>
-        void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
+		protected override void OnFileActivated(FileActivatedEventArgs args)
+		{
+			Frame rootFrame = Window.Current.Content as Frame;
+			if (rootFrame == null)
+			{
+				rootFrame = new Frame();
+				if (args.PreviousExecutionState == ApplicationExecutionState.Terminated)
+				{
+					//TODO
+				}
+				Window.Current.Content = rootFrame;
+			}
+			if(rootFrame.Content == null)
+			{
+				if (!rootFrame.Navigate(typeof(MainPage)))
+				{
+					throw new Exception("Failed to create initial page");
+				}
+			}
+			var p = rootFrame.Content as MainPage;
+			p.EnterPath = args.Files[0].Path;
+
+			// Ensure the current window is active 
+			Window.Current.Activate();
+
+		}
+
+		/// <summary>
+		/// Invoked when Navigation to a certain page fails
+		/// </summary>
+		/// <param name="sender">The Frame which failed navigation</param>
+		/// <param name="e">Details about the navigation failure</param>
+		void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
             throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
