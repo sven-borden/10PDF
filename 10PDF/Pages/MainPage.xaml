@@ -38,8 +38,8 @@
 									<ColumnDefinition />
 									<ColumnDefinition />
 								</Grid.ColumnDefinitions>
-								<Image Grid.Column="0" Stretch="Fill" Source="{x:Bind ImageUnPair,Mode=OneWay}"/>
-								<Image Grid.Column="1" Stretch="Uniform" Source="{x:Bind ImagePair,Mode=OneWay}"/>
+								<Image Margin="10" Grid.Column="0" Stretch="Fill" Source="{x:Bind ImageUnPair,Mode=OneWay}"/>
+								<Image Margin="10" Grid.Column="1" Stretch="Fill" Source="{x:Bind ImagePair,Mode=OneWay}"/>
 							</Grid>
 						</DataTemplate>
 					</ListView.ItemTemplate>
